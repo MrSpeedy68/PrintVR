@@ -6,7 +6,11 @@ public class GenerateGrid : MonoBehaviour
 {
     public GameObject blackGameObject;
 
-    public int worldSizeX = 10, worldSizeY = 10, gridOffset = 2;
+    private int worldSizeX = 100, worldSizeY = 100;
+    private int noiseHeight = 5
+        ;
+    private float gridOffset = 1.1f;
+
     
     // Start is called before the first frame update
     void Start()
@@ -16,12 +20,20 @@ public class GenerateGrid : MonoBehaviour
             for(int z = 0; z < worldSizeY; z++)
             {
                 Vector3 pos = new Vector3(x * gridOffset,
-                    0,
+                    generateNoise(x,z,8f) * noiseHeight,
                     z * gridOffset);
                 GameObject block = Instantiate(blackGameObject, pos, Quaternion.identity) as GameObject;
 
                 block.transform.SetParent(this.transform);
             }
         }    
+    }
+
+    private float generateNoise(int x, int z, float detailScale)
+    {
+        float xNoise = (x + this.transform.position.x) / detailScale;
+        float zNoise = (z + this.transform.position.z) / detailScale;
+
+        return Mathf.PerlinNoise(xNoise, zNoise);
     }
 }
