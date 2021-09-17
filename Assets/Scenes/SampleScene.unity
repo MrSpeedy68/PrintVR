@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blackGameObject: {fileID: 7537593558047092912, guid: 0c19d01c242c60d4c89f3933e0f0699b, type: 3}
+  objectToSpawn: {fileID: 3984864085290724689, guid: a08735134f1125e49af16638dfe59377, type: 3}
 --- !u!4 &59215546
 Transform:
   m_ObjectHideFlags: 0
