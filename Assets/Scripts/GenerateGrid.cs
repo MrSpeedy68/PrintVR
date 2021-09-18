@@ -4,64 +4,81 @@ using UnityEngine;
 
 public class GenerateGrid : MonoBehaviour
 {
-    public GameObject blackGameObject;
+    [Range(2, 100)] public int length = 5;
+    public GameObject cube;
+    public GameObject player;
+    public int detailScale = 8;
+    public int noiseHeight = 3;
+    public List<GameObject> blockList;
+    private Vector3 startPos = Vector3.zero;
+    private Hashtable cubePos;
 
-    public GameObject objectToSpawn;
+    private int XPlayerMove => (int)(player.transform.position.x - startPos.x);
+    private int ZPlayerMove => (int)(player.transform.position.z - startPos.z);
 
-    private int worldSizeX = 100, worldSizeY = 100;
-    private int noiseHeight = 3;
-    private float gridOffset = 1.1f;
+    private int XPlayerLocation => (int)Mathf.Floor(player.transform.position.x);
+    private int ZPlayerLocation => (int)Mathf.Floor(player.transform.position.z);
 
-    private List<Vector3> blockPositions = new List<Vector3>();
-    
     // Start is called before the first frame update
     void Start()
     {
-        for(int x = 0; x < worldSizeX; x++) //Loop through x and z axis
-        {
-            for(int z = 0; z < worldSizeY; z++)
-            {
-                Vector3 pos = new Vector3(x * gridOffset,
-                    generateNoise(x,z,8f) * noiseHeight,
-                    z * gridOffset);
-
-                GameObject block = Instantiate(blackGameObject, pos, Quaternion.identity) as GameObject;
-
-                blockPositions.Add(block.transform.position); //Add block to the list
-
-                block.transform.SetParent(this.transform);
-            }
-        }
-        SpawnObject();
+        cubePos = new Hashtable();
+        GenerateTerrain(length);
     }
 
-    private void SpawnObject()
+    private void Update()
+    {
+        if(Mathf.Abs(XPlayerMove) >= 1 || Mathf.Abs(ZPlayerMove) >= 1)
+        {
+            GenerateTerrain(length);
+        }
+    }
+
+    private void GenerateTerrain(int length)
+    {
+        for (int x = -length; x < length; x++) //Loop through x and z axis
+        {
+            for (int z = -length; z < length; z++)
+            {
+                Vector3 pos = new Vector3(x + XPlayerLocation, generateYNoise(x + XPlayerLocation, z + ZPlayerLocation, detailScale) * noiseHeight, z + ZPlayerLocation);
+
+                    if(!cubePos.ContainsKey(pos))
+                    {
+                        GameObject blockInstance = Instantiate(cube, pos, Quaternion.identity, transform);
+
+                        blockList.Add(blockInstance);
+
+                        cubePos.Add(pos, blockInstance);
+                    }
+            }
+        }
+    }
+
+/*    private void SpawnObject()
     {
         for(int i = 0; i < 20; i++)
         {
-            GameObject toPlaceObject = Instantiate(objectToSpawn, ObjectSpawnLocation(), Quaternion.identity);
+            GameObject toPlaceObject = Instantiate(cube, ObjectSpawnLocation(), Quaternion.identity);
         }
-    }
+    }*/
 
-    private Vector3 ObjectSpawnLocation()
+/*    private Vector3 ObjectSpawnLocation()
     {
-        int rndIndex = Random.Range(0, blockPositions.Count); //Random Position between 0 and amount of blocks
-
+        int rndIndex = Random.Range(0, blockList.Count); //Random Position between 0 and amount of blocks
         Vector3 newpos = new Vector3(
-            blockPositions[rndIndex].x,
-            blockPositions[rndIndex].y + 1f,
-            blockPositions[rndIndex].z
+            blockList[rndIndex].x,
+            blockList[rndIndex].y + 1f,
+            blockList[rndIndex].z
             );
 
-        blockPositions.RemoveAt(rndIndex); //Remove this index so that objects dont spawn at the same place
+        //blockPositions.RemoveAt(rndIndex); //Remove this index so that objects dont spawn at the same place
         return newpos;
-    }
+    }*/
 
-    private float generateNoise(int x, int z, float detailScale)
+    private float generateYNoise(int x, int z, float detailScale)
     {
         float xNoise = (x + this.transform.position.x) / detailScale;
         float zNoise = (z + this.transform.position.z) / detailScale;
-
         return Mathf.PerlinNoise(xNoise, zNoise);
     }
 }
