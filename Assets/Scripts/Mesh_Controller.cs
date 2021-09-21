@@ -12,10 +12,11 @@ public class Mesh_Controller : MonoBehaviour
     private Mesh mesh;
     private Vector3[] verticies, modifiedVerts;
 
+    public GameObject obj;
     // Start is called before the first frame update
     void Start()
     {
-        mesh = GetComponentInChildren<MeshFilter>().mesh;
+        mesh = obj.GetComponent<MeshFilter>().mesh;
         verticies = mesh.vertices;
         modifiedVerts = mesh.vertices;
     }
@@ -23,7 +24,7 @@ public class Mesh_Controller : MonoBehaviour
     void RecalculateMesh()
     {
         mesh.vertices = modifiedVerts;
-        GetComponentInChildren<MeshCollider>().sharedMesh = mesh;
+        obj.GetComponent<MeshCollider>().sharedMesh = mesh;
         mesh.RecalculateNormals();
     }
 
@@ -41,8 +42,8 @@ public class Mesh_Controller : MonoBehaviour
 
                 float smoothingFactor = 2f;
                 float force = deformationStrength / (1f + hit.point.sqrMagnitude);
-                print(distance.sqrMagnitude);
-                if (distance.sqrMagnitude < radius)
+                print(distance.ToString());
+                if (distance.x < radius)
                 {
                     print("hehe");
                     if (Input.GetMouseButton(0))
