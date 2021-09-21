@@ -10,10 +10,30 @@ public class ExampleClass : MonoBehaviour
     public float radius = 2f;
     [Range(0.5f, 5f)]
     public float deformationStrength = 2f;
+    public GameObject sphere;
+    public GameObject InputObj;
 
     void Start()
     {
         cam = GetComponent<Camera>();
+
+        Mesh mesh = InputObj.GetComponent<MeshFilter>().mesh;
+
+        MakeSpheres(mesh);
+    }
+
+    public void MakeSpheres(Mesh mesh)
+    {
+        Vector3[] verts = mesh.vertices;
+
+        foreach (Vector3 v in verts)
+        {
+            Vector3 newPos = InputObj.transform.TransformPoint(v);
+
+            var sp = Instantiate(sphere, newPos, Quaternion.identity);
+
+            sp.transform.parent = InputObj.transform;
+        }
     }
 
     public static int GetClosestVertex(RaycastHit aHit, int[] aTriangles)
@@ -54,13 +74,10 @@ public class ExampleClass : MonoBehaviour
             Vector3 vert = vertices[GetClosestVertex(hit, triangles)];
             vert = hitTransform.TransformPoint(vert);
 
-            Debug.DrawRay(vert, Vector3.up, Color.green);
+            Debug.DrawRay(vert, Vector3.up, Color.red);
 
             float smoothingFactor = 2f;
             float force = deformationStrength / (1f + hit.point.sqrMagnitude);
-
-
-
 
             if (Input.GetMouseButton(0))
             {
