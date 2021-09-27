@@ -19,7 +19,7 @@ public class ExampleClass : MonoBehaviour
 
         Mesh mesh = InputObj.GetComponent<MeshFilter>().mesh;
 
-        MakeSpheres(mesh);
+        //MakeSpheres(mesh);
     }
 
     public void MakeSpheres(Mesh mesh)
@@ -62,6 +62,7 @@ public class ExampleClass : MonoBehaviour
 
         if(Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
+            
             MeshCollider meshCollider = hit.collider as MeshCollider;
             if (meshCollider == null || meshCollider.sharedMesh == null)
                 return;
@@ -81,7 +82,11 @@ public class ExampleClass : MonoBehaviour
 
             if (Input.GetMouseButton(0))
             {
-                vertices[GetClosestVertex(hit, triangles)] = new Vector3(vert.x, vert.y + 5f, vert.z);
+                print("Hit");
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    vertices[i] += Vector3.up * 2 * Time.deltaTime;
+                }
             }
             else if (Input.GetMouseButton(1))
             {
