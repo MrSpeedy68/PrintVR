@@ -13,13 +13,19 @@ public class ExampleClass : MonoBehaviour
     public GameObject sphere;
     public GameObject InputObj;
 
+    Vector3[] vertices;
+    int[] triangles;
+    Mesh mesh;
     void Start()
     {
         cam = GetComponent<Camera>();
 
-        Mesh mesh = InputObj.GetComponent<MeshFilter>().mesh;
+        mesh = InputObj.GetComponent<MeshFilter>().mesh;
 
-        //MakeSpheres(mesh);
+        vertices = mesh.vertices;
+        triangles = mesh.triangles;
+
+        MakeSpheres(mesh);
     }
 
     public void MakeSpheres(Mesh mesh)
@@ -68,8 +74,7 @@ public class ExampleClass : MonoBehaviour
                 return;
 
             Mesh mesh = meshCollider.sharedMesh;
-            Vector3[] vertices = mesh.vertices;
-            int[] triangles = mesh.triangles;
+
             Transform hitTransform = hit.collider.transform;
 
             Vector3 vert = vertices[GetClosestVertex(hit, triangles)];
@@ -77,47 +82,28 @@ public class ExampleClass : MonoBehaviour
 
             Debug.DrawRay(vert, Vector3.up, Color.red);
 
-            float smoothingFactor = 2f;
-            float force = deformationStrength / (1f + hit.point.sqrMagnitude);
+            //float smoothingFactor = 2f;
+            //float force = deformationStrength / (1f + hit.point.sqrMagnitude);
 
             if (Input.GetMouseButton(0))
             {
-                print("Hit");
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    vertices[i] += Vector3.up * 2 * Time.deltaTime;
-                }
+                //for (int i = 0; i < vertices.Length; i++)
+                //{
+                    vertices[GetClosestVertex(hit, triangles)] += Vector3.up * 1 * Time.deltaTime;
+                //}
             }
             else if (Input.GetMouseButton(1))
             {
-                vertices[GetClosestVertex(hit, triangles)] = vertices[GetClosestVertex(hit, triangles)] + (Vector3.down * force) / smoothingFactor;
+                for (int i = 0; i < vertices.Length; i++)
+                {
+                    vertices[i] += Vector3.up * 1 * Time.deltaTime;
+                }
             }
 
         }
 
-        /*RaycastHit hit;
-        if (!Physics.Raycast(cam.ScreenPointToRay(Input.mousePosition), out hit))
-            return;
-
-        MeshCollider meshCollider = hit.collider as MeshCollider;
-        if (meshCollider == null || meshCollider.sharedMesh == null)
-            return;
-
-        Mesh mesh = meshCollider.sharedMesh;
-        Vector3[] vertices = mesh.vertices;
-        int[] triangles = mesh.triangles;
-        
-        Vector3 p0 = vertices[triangles[hit.triangleIndex * 3 + 0]];
-        Vector3 p1 = vertices[triangles[hit.triangleIndex * 3 + 1]];
-        Vector3 p2 = vertices[triangles[hit.triangleIndex * 3 + 2]];
-        Transform hitTransform = hit.collider.transform;
-        p0 = hitTransform.TransformPoint(p0);
-        p1 = hitTransform.TransformPoint(p1);
-        p2 = hitTransform.TransformPoint(p2);
-        Debug.DrawRay(p0, Vector3.up, Color.green);
-        //Debug.DrawLine(p1, p2);
-        //Debug.DrawLine(p2, p0);
-
-        vertices[triangles[hit.triangleIndex * 3 + 0]] += Vector3.up * 5;*/
+        mesh.vertices = vertices;
+        mesh.RecalculateBounds();
+        //MakeSpheres(mesh);
     }
 }
