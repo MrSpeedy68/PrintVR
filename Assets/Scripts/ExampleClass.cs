@@ -7,43 +7,55 @@ public class ExampleClass : MonoBehaviour
 {
     Camera cam;
 
-    public float radius = 2f;
-    [Range(0.5f, 5f)]
-    public float deformationStrength = 2f;
-    public GameObject sphere;
-    public GameObject InputObj;
+    public float radius = 2f; //Radius of the affected area
+    [Range(0.1f, 5f)]
+    public float deformationStrength = 2f; //Deformation strength
+    [Range(0.5f, 10f)]
+    public float smoothingFactor = 2f; //How much the deformation will get smoothened out
+    public bool vertexVisualization = true;
+    public GameObject sphere; //Object to represent vertices
+    public GameObject InputObj; //Object to be manipulated
 
-    Vector3[] vertices;
-    int[] triangles;
+    Vector3[] vertices, deformedVerts; //Array of mesh vertices
+    int[] triangles, deformedTris; //Array of mesh triangles
+
     Mesh mesh;
     GameObject[] spheres;
+
     void Start()
     {
-        cam = GetComponent<Camera>();
-
-        mesh = InputObj.GetComponent<MeshFilter>().mesh;
+        //Set mesh and the vert and tris arrays
+        mesh = InputObj.GetComponent<MeshFilter>().mesh; 
 
         vertices = mesh.vertices;
-        triangles = mesh.triangles;
+        deformedVerts = mesh.vertices;
 
+        triangles = mesh.triangles;
+        deformedTris = mesh.triangles;
+
+        //Make new array for amount of verts to set them as spheres
         spheres = new GameObject[vertices.Length];
 
         MakeSpheres();
     }
 
-    
+    //Method to make spheres on vert points
     public void MakeSpheres()
     { 
-        for(int i = 0; i < vertices.Length;i++)
+        if(vertexVisualization)
         {
-            Vector3 newPos = InputObj.transform.TransformPoint(vertices[i]);
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                Vector3 newPos = InputObj.transform.TransformPoint(vertices[i]);
 
-            spheres[i] = Instantiate(sphere, newPos, Quaternion.identity);
+                spheres[i] = Instantiate(sphere, newPos, Quaternion.identity);
 
-            spheres[i].transform.parent = InputObj.transform;
+                spheres[i].transform.parent = InputObj.transform;
+            }
         }
     }
 
+    //Method to update position of vert points of spheres
     public void UpdateSpheres(Vector3[] verPos)
     {
         for (int i = 0; i < spheres.Length; i++)
@@ -54,6 +66,8 @@ public class ExampleClass : MonoBehaviour
         }
     }
 
+    //Method to get the index of the closet vertice depending on Raycast Hit using the triangles of the mesh.
+    //Detects what triangle the user hit and does calculation to determine what vertice is closest to the hit point on the give triangle.
     public static int GetClosestVertex(RaycastHit aHit, int[] aTriangles)
     {
         var b = aHit.barycentricCoordinate;
@@ -77,37 +91,42 @@ public class ExampleClass : MonoBehaviour
     {
         RaycastHit hit;
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        if(Physics.Raycast(ray, out hit, Mathf.Infinity))
+        
+        if(Physics.Raycast(ray, out hit, Mathf.Infinity)) //Raycast from mouse point to screen
         {
-            
-            MeshCollider meshCollider = hit.collider as MeshCollider;
+            MeshCollider meshCollider = hit.collider as MeshCollider; //Check to make sure a mesh was hit
             if (meshCollider == null || meshCollider.sharedMesh == null)
                 return;
 
             Transform hitTransform = hit.collider.transform;
 
-            Vector3 vert = vertices[GetClosestVertex(hit, triangles)];
-            vert = hitTransform.TransformPoint(vert);
+            Vector3 vert = deformedVerts[GetClosestVertex(hit, deformedTris)]; //Gets the closest vert to the hit point
+            vert = hitTransform.TransformPoint(vert); //Converts transform to world position
 
-            Debug.DrawRay(vert, Vector3.up, Color.red);
+            Debug.DrawRay(vert, Vector3.up, Color.red); //Draw ray on vert point
 
-            //float smoothingFactor = 2f;
-            //float force = deformationStrength / (1f + hit.point.sqrMagnitude);
-
+            //Manipulate mesh on mouse button click
             if (Input.GetMouseButton(0))
             {
-                vertices[GetClosestVertex(hit, triangles)] += Vector3.up * 1 * Time.deltaTime;
+                print(deformedVerts[GetClosestVertex(hit, deformedTris)].sqrMagnitude);
+                deformedVerts[GetClosestVertex(hit, deformedTris)] += (hit.normal * deformationStrength) / smoothingFactor;
 
             }
             else if (Input.GetMouseButton(1))
             {   
-                vertices[GetClosestVertex(hit, triangles)] += Vector3.down * 1 * Time.deltaTime;
+                deformedVerts[GetClosestVertex(hit, deformedTris)] += (hit.normal * -deformationStrength) / smoothingFactor;
             }
 
         }
-        mesh.vertices = vertices;
-        mesh.RecalculateBounds();
-        UpdateSpheres(vertices);
+        mesh.vertices = deformedVerts; //Set new verts as mesh verts
+        mesh.RecalculateBounds(); //Recalculate the mesh bounds
+        mesh.RecalculateNormals();
+        mesh.RecalculateTangents();
+
+        if (vertexVisualization)
+        {
+            UpdateSpheres(deformedVerts); //Update the spheres to new vert positions
+        }
+
     }
 }
