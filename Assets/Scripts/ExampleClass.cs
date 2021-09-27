@@ -16,6 +16,7 @@ public class ExampleClass : MonoBehaviour
     Vector3[] vertices;
     int[] triangles;
     Mesh mesh;
+    GameObject[] spheres;
     void Start()
     {
         cam = GetComponent<Camera>();
@@ -25,20 +26,31 @@ public class ExampleClass : MonoBehaviour
         vertices = mesh.vertices;
         triangles = mesh.triangles;
 
-        MakeSpheres(mesh);
+        spheres = new GameObject[vertices.Length];
+
+        MakeSpheres();
     }
 
-    public void MakeSpheres(Mesh mesh)
-    {
-        Vector3[] verts = mesh.vertices;
-
-        foreach (Vector3 v in verts)
+    
+    public void MakeSpheres()
+    { 
+        for(int i = 0; i < vertices.Length;i++)
         {
-            Vector3 newPos = InputObj.transform.TransformPoint(v);
+            Vector3 newPos = InputObj.transform.TransformPoint(vertices[i]);
 
-            var sp = Instantiate(sphere, newPos, Quaternion.identity);
+            spheres[i] = Instantiate(sphere, newPos, Quaternion.identity);
 
-            sp.transform.parent = InputObj.transform;
+            spheres[i].transform.parent = InputObj.transform;
+        }
+    }
+
+    public void UpdateSpheres(Vector3[] verPos)
+    {
+        for (int i = 0; i < spheres.Length; i++)
+        {
+            Vector3 newPos = InputObj.transform.TransformPoint(verPos[i]);
+
+            spheres[i].transform.position = newPos;
         }
     }
 
@@ -73,8 +85,6 @@ public class ExampleClass : MonoBehaviour
             if (meshCollider == null || meshCollider.sharedMesh == null)
                 return;
 
-            Mesh mesh = meshCollider.sharedMesh;
-
             Transform hitTransform = hit.collider.transform;
 
             Vector3 vert = vertices[GetClosestVertex(hit, triangles)];
@@ -87,23 +97,17 @@ public class ExampleClass : MonoBehaviour
 
             if (Input.GetMouseButton(0))
             {
-                //for (int i = 0; i < vertices.Length; i++)
-                //{
-                    vertices[GetClosestVertex(hit, triangles)] += Vector3.up * 1 * Time.deltaTime;
-                //}
+                vertices[GetClosestVertex(hit, triangles)] += Vector3.up * 1 * Time.deltaTime;
+
             }
             else if (Input.GetMouseButton(1))
-            {
-                for (int i = 0; i < vertices.Length; i++)
-                {
-                    vertices[i] += Vector3.up * 1 * Time.deltaTime;
-                }
+            {   
+                vertices[GetClosestVertex(hit, triangles)] += Vector3.down * 1 * Time.deltaTime;
             }
 
         }
-
         mesh.vertices = vertices;
         mesh.RecalculateBounds();
-        //MakeSpheres(mesh);
+        UpdateSpheres(vertices);
     }
 }
