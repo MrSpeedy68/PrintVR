@@ -7,7 +7,7 @@ public class ExampleClass : MonoBehaviour
 {
     Camera cam;
 
-    public float radius = 2f; //Radius of the affected area
+    public float radius = 10f; //Radius of the affected area
     [Range(0.1f, 5f)]
     public float deformationStrength = 2f; //Deformation strength
     [Range(0.5f, 10f)]
@@ -106,10 +106,16 @@ public class ExampleClass : MonoBehaviour
             Debug.DrawRay(vert, Vector3.up, Color.red); //Draw ray on vert point
 
             //Manipulate mesh on mouse button click
+            print(deformedVerts[GetClosestVertex(hit, deformedTris)].sqrMagnitude - hit.barycentricCoordinate.sqrMagnitude);
             if (Input.GetMouseButton(0))
             {
-                print(deformedVerts[GetClosestVertex(hit, deformedTris)].sqrMagnitude);
+
+                //for(int v = 0; v < deformedVerts.Length; v++)
+                //{
+                //if(deformedVerts[GetClosestVertex(hit, deformedTris)].sqrMagnitude - hit.barycentricCoordinate.sqrMagnitude < radius) // :/
+                //deformedVerts[v] += (hit.normal * deformationStrength) / smoothingFactor;
                 deformedVerts[GetClosestVertex(hit, deformedTris)] += (hit.normal * deformationStrength) / smoothingFactor;
+
 
             }
             else if (Input.GetMouseButton(1))
